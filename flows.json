@@ -1,0 +1,329 @@
+[
+    {
+        "id": "1212e79e7bbb52e2",
+        "type": "mqtt in",
+        "z": "fa507a77121c0acb",
+        "name": "Analog Reading",
+        "topic": "analogReading",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "d141f4e5d7204392",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 200,
+        "y": 260,
+        "wires": [
+            [
+                "c0a18652d1840bd9",
+                "a68f2c9627758f2a"
+            ]
+        ]
+    },
+    {
+        "id": "c0a18652d1840bd9",
+        "type": "function",
+        "z": "fa507a77121c0acb",
+        "name": "extract_sensorReading",
+        "func": "// Define topics for different swarmIDs to control chart line colors\nlet topics = [\"swarmID_0\", \"swarmID_1\", \"swarmID_5\"];\nlet thisTopic;\nlet otherTopics = [];\n\n// Extract swarmID and analogReading from the input message\nlet swarmID = msg.payload.swarmID;\nlet analogReading = msg.payload.analogReading;\n\n// Determine the topic for the current swarmID\nif (swarmID === \"0\") {\n    thisTopic = topics[0];\n    otherTopics = [topics[1], topics[2]];\n} else if (swarmID === \"1\") {\n    thisTopic = topics[1];\n    otherTopics = [topics[0], topics[2]];\n} else if (swarmID === \"5\") {\n    thisTopic = topics[2];\n    otherTopics = [topics[0], topics[1]];\n}\n\n// Retrieve the last topic from context (if it exists)\nlet lastTopic = context.get('last') || thisTopic;\n\n// Prepare the output messages\nlet msg2 = [];\nif (thisTopic !== lastTopic) {\n    // Threshold crossed, send data to the current line and deactivate others\n    msg.topic = lastTopic;\n    msg2 = otherTopics.map(topic => ({ payload: null, topic: topic })); // Deactivate other lines\n    msg2.push({ payload: analogReading, topic: thisTopic }); // Activate the current line\n} else {\n    // No threshold crossing, update the current line\n    msg.topic = thisTopic;\n    msg2 = otherTopics.map(topic => ({ payload: null, topic: topic })); // Deactivate other lines\n}\n\n// Save the current topic to context\ncontext.set('last', thisTopic);\n\n// Add the analogReading for clarity\nmsg.payload = analogReading;\n\n// Return an array of messages for all lines\nreturn [[msg, ...msg2]];\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 260,
+        "wires": [
+            [
+                "9d58d0d51e121d92"
+            ]
+        ]
+    },
+    {
+        "id": "9d58d0d51e121d92",
+        "type": "ui_chart",
+        "z": "fa507a77121c0acb",
+        "name": "",
+        "group": "cc2891781a0648f9",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Light Sensor Reading",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "1000",
+        "removeOlder": "30",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 780,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "45d36869924d96eb",
+        "type": "ui_button",
+        "z": "fa507a77121c0acb",
+        "name": "",
+        "group": "cc2891781a0648f9",
+        "order": 3,
+        "width": "0",
+        "height": "0",
+        "passthru": false,
+        "label": "Clear Chart",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 470,
+        "y": 420,
+        "wires": [
+            [
+                "9d58d0d51e121d92",
+                "0580aed471f50fe7"
+            ]
+        ]
+    },
+    {
+        "id": "a68f2c9627758f2a",
+        "type": "debug",
+        "z": "fa507a77121c0acb",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 400,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "c70cb55ffc0dd48f",
+        "type": "mqtt in",
+        "z": "fa507a77121c0acb",
+        "name": "Reset Request",
+        "topic": "resetRequest",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "d141f4e5d7204392",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 200,
+        "y": 360,
+        "wires": [
+            [
+                "f7235a0cb062340f"
+            ]
+        ]
+    },
+    {
+        "id": "f7235a0cb062340f",
+        "type": "function",
+        "z": "fa507a77121c0acb",
+        "name": "Clear",
+        "func": "msg.payload=[];\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 360,
+        "wires": [
+            [
+                "9d58d0d51e121d92",
+                "0580aed471f50fe7"
+            ]
+        ]
+    },
+    {
+        "id": "aeb636072bdcc1bf",
+        "type": "mqtt in",
+        "z": "fa507a77121c0acb",
+        "name": "Master Durations",
+        "topic": "masterDuration",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "d141f4e5d7204392",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 200,
+        "y": 480,
+        "wires": [
+            [
+                "4c7d1d270390ada6",
+                "7a76ecb9f4b27e88"
+            ]
+        ]
+    },
+    {
+        "id": "4c7d1d270390ada6",
+        "type": "debug",
+        "z": "fa507a77121c0acb",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 460,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "0580aed471f50fe7",
+        "type": "ui_chart",
+        "z": "fa507a77121c0acb",
+        "name": "",
+        "group": "cc2891781a0648f9",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Master Duration",
+        "chartType": "bar",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 760,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7a76ecb9f4b27e88",
+        "type": "function",
+        "z": "fa507a77121c0acb",
+        "name": "extract_durationsData",
+        "func": "// Initialize an object to track all swarm durations\nlet durations = context.get('durations') || {};\n\n// Update the durations object with the new payload\nlet payload = msg.payload;\nObject.keys(payload).forEach(key => {\n    durations[key] = payload[key]; // Update or add new swarmID and duration\n});\n\n// Remove any keys that are no longer in the payload\nObject.keys(durations).forEach(key => {\n    if (!Object.hasOwn(payload, key)) {\n        delete durations[key];\n    }\n});\n\n// Prepare an array of messages for the bar graph\nlet messages = [];\nObject.keys(durations).forEach(swarmID => {\n    messages.push({\n        payload: durations[swarmID], // Set the bar height to the duration\n        topic: `swarmID_${swarmID}`, // Use swarmID for topic to control bar color\n    });\n});\n\n// Save the updated durations in context\ncontext.set('durations', durations);\n\n// Return the array of messages to update the bar graph\nreturn [messages];\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 480,
+        "wires": [
+            [
+                "0580aed471f50fe7"
+            ]
+        ]
+    },
+    {
+        "id": "d141f4e5d7204392",
+        "type": "mqtt-broker",
+        "name": "HiveMQTT",
+        "broker": "35097c4b385744609a0a8471720c551d.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "",
+        "clientid": "lanhp",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "cc2891781a0648f9",
+        "type": "ui_group",
+        "name": "Graph",
+        "tab": "2f266f2e9f71725b",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2f266f2e9f71725b",
+        "type": "ui_tab",
+        "name": "Swarm Dashboard",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
