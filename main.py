@@ -15,10 +15,10 @@ import paho.mqtt.client as mqtt
 import json
 
 # MQTT Configuration
-MQTT_URL = "35097c4b385744609a0a8471720c551d.s1.eu.hivemq.cloud"
+MQTT_URL = ".s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
-MQTT_USERNAME = "lanhp"
-MQTT_PASSWORD = "Lanlanlan@300701"
+MQTT_USERNAME = "xxxxx"
+MQTT_PASSWORD = "******"
 MQTT_TOPIC_READING = "analogReading"
 MQTT_TOPIC_RESET = "resetRequest"
 MQTT_TOPIC_DURATION = "masterDuration"
